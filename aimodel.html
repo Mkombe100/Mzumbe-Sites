@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Main Content */
+        .content {
+            text-align: center;
+            padding: 2rem;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
+        }
+
+        /* Button Styles */
+        .open-deepseek-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: 600;
+        }
+
+        .open-deepseek-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .open-deepseek-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        /* Modal Container */
+        .modal-container {
+            width: 90%;
+            height: 85vh;
+            max-width: 1200px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+        }
+
+        /* Modal Header */
+        .modal-header {
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .deepseek-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.2s;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        /* Iframe Container */
+        .iframe-container {
+            flex: 1;
+            background: white;
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Loading Indicator */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #667eea;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            p {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .modal-container {
+                width: 95%;
+                height: 90vh;
+            }
+            
+            .modal-header h2 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>🤖 Welcome to My Website</h1>
+        <p>Need help? Chat with DeepSeek AI Assistant!</p>
+        <button class="open-deepseek-btn" onclick="openDeepSeek()">
+            💬 Chat with DeepSeek
+        </button>
+    </div>
+
+    <!-- Modal with DeepSeek iframe -->
+    <div id="deepseekModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>
+                    <span class="deepseek-icon">🤖</span>
+                    DeepSeek AI Assistant
+                </h2>
+                <button class="close-btn" onclick="closeDeepSeek()">×</button>
+            </div>
+            <div class="iframe-container">
+                <div id="loadingIndicator" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading DeepSeek AI...</p>
+                </div>
+                <iframe 
+                    id="deepseekIframe"
+                    src="https://chat.deepseek.com/" 
+                    title="DeepSeek AI Chat"
+                    allow="microphone; camera; clipboard-read; clipboard-write"
+                    onload="hideLoading()"
+                ></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openDeepSeek() {
+            const modal = document.getElementById('deepseekModal');
+            const iframe = document.getElementById('deepseekIframe');
+            const loading = document.getElementById('loadingIndicator');
+            
+            // Show loading
+            loading.style.display = 'block';
+            iframe.style.display = 'none';
+            
+            // Show modal
+            modal.classList.add('active');
+            
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+            
+            // Reload iframe to ensure fresh connection (optional)
+            // iframe.src = iframe.src;
+        }
+        
+        function closeDeepSeek() {
+            const modal = document.getElementById('deepseekModal');
+            modal.classList.remove('active');
+            
+            // Restore body scroll
+            document.body.style.overflow = 'auto';
+        }
+        
+        function hideLoading() {
+            const loading = document.getElementById('loadingIndicator');
+            const iframe = document.getElementById('deepseekIframe');
+            
+            loading.style.display = 'none';
+            iframe.style.display = 'block';
+        }
+        
+        // Close modal when clicking outside the modal container
+        document.getElementById('deepseekModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeepSeek();
+            }
+        });
+        
+        // Close with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('deepseekModal');
+                if (modal.classList.contains('active')) {
+                    closeDeepSeek();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
